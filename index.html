@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>好友共享共用行事曆</title>
+  <style>
+    :root {
+      --bg-color: #eef2f5;
+      --panel-bg: #e2e7ec;
+      --card-bg: #f5f7f9;
+      --text-color: #2c3e50;
+      
+      /* 飽和度與透明度統一的柔和色調 */
+      --weekend-bg-color: rgba(231, 76, 60, 0.2);     /* 假日紅 */
+      --today-color: rgba(241, 196, 15, 0.25);          /* 當日平時黃 */
+      --today-weekend-color: #e67e22;                  /* 當日逢假日：精準深橘色 */
+      --selected-color: #3498db;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1280px;
+      height: 92vh;
+      max-height: 800px;
+    }
+
+    /* 左側月曆面板 */
+    .calendar-panel {
+      flex: 1.4;
+      background: var(--panel-bg);
+      border-radius: 30px;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-title-group h1 {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .calendar-title-group p {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-top: 2px;
+    }
+
+    .header-right-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .toggle-holiday-btn {
+      background: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .nav-btn {
+      background: #fff;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .weekdays-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .day-cell {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .day-num {
+      font-weight: bold;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+
+    /* 基礎背景色樣式 */
+    .day-cell.weekend { background-color: var(--weekend-bg-color) !important; }
+    .day-cell.national-holiday { background-color: var(--weekend-bg-color) !important; }
+    .day-cell.work-makeup { background-color: var(--card-bg) !important; } 
+
+    /* 今日特殊顏色判定 */
+    .day-cell.today { background-color: var(--today-color) !important; } 
+    .day-cell.today.is-vaction { background-color: var(--today-weekend-color) !important; color: #fff !important; } 
+    .day-cell.today.is-vaction .day-num { color: #fff !important; }
+
+    .day-cell.selected { border: 2px solid var(--selected-color); background-color: #fff; }
+    .day-cell.empty { opacity: 0.2; cursor: default; pointer-events: none; }
+
+    .day-emoji-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 2px;
+      font-size: 14px;
+    }
+
+    /* 右側待辦面板 */
+    .todo-panel {
+      flex: 1;
+      background: var(--panel-bg);
+      border-radius: 30px;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .todo-panel h2 { font-size: 20px; margin-bottom: 4px; }
+    .selected-date-sub { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; }
+
+    .todo-main-list-area {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .todo-list-container {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    .todo-form-area {
+      flex: 7;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 0;
+    }
+
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .todo-item-info { display: flex; flex-direction: column; gap: 2px; }
+    .todo-item-title { font-weight: bold; font-size: 14px; }
+    .todo-item-time { font-size: 11px; color: #95a5a6; }
+
+    .del-btn {
+      background: #fadbd8; color: #e74c3c; border: none;
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+
+    .todo-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 20px;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #7f8c8d;
+    }
+
+    .datetime-combo-box {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .datetime-combo-box input[type="date"] {
+      flex: 1.8;
+      min-width: 0;
+    }
+
+    .datetime-combo-box select {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+
+    input[type="text"], input[type="date"], select {
+      background: var(--bg-color);
+      border: none;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .submit-btn {
+      background-color: #34495e;
+      color: white; border: none; padding: 10px;
+      border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <div class="calendar-title-group">
+          <h1 id="year-month-label">2026 年 6 月</h1>
+          <p id="current-today-sub">今日：2026-06-20</p>
+        </div>
+        <div class="header-right-controls">
+          <button class="toggle-holiday-btn" id="btn-toggle-holiday">🗓️ 顯示國定假日</button>
+          <button class="nav-btn" id="btn-prev">〈</button>
+          <button class="nav-btn" id="btn-next">〉</button>
+        </div>
+      </div>
+
+      <div class="weekdays-grid">
+        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+      </div>
+      <div class="days-grid" id="days-container"></div>
+    </div>
+
+    <div class="todo-panel">
+      <h2>目前選取日期</h2>
+      <p class="selected-date-sub" id="label-selected-date">2026-06-20</p>
+
+      <div class="todo-main-list-area">
+        <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px;" id="todo-count-label">當日代辦 (0筆)</div>
+        <div class="todo-list-container" id="todo-list-target"></div>
+      </div>
+
+      <div class="todo-form-area">
+        <form class="todo-form" id="main-todo-form">
+          <div class="form-group">
+            <label>待辦名稱</label>
+            <input type="text" id="input-title" placeholder="輸入待辦事項" required>
+          </div>
+
+          <div class="form-group">
+            <label>選擇 Emoji</label>
+            <select id="select-emoji">
+              <option value="">-- 無 --</option>
+              <optgroup label="💡 狀態與提示">
+                <option value="📌">📌 提示</option><option value="📝">📝 紀錄</option>
+                <option value="🔥">🔥 緊急</option><option value="💡">💡 想法</option>
+                <option value="💤">💤 休息</option><option value="⚠️">⚠️ 注意</option>
+              </optgroup>
+              <optgroup label="🎯 活動與日常">
+                <option value="💻">💻 工作</option><option value="🎒">🎒 上課</option>
+                <option value="🥵">🥵 段考</option><option value="🎉">🎉 聚會</option>
+                <option value="🏃">🏃 運動</option><option value="🚗">🚗 出遊</option>
+                <option value="🛒">🛒 購物</option><option value="🎨">🎨 創作</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>開始時間</label>
+            <div class="datetime-combo-box">
+              <input type="date" id="start-date" required>
+              <select id="start-hour"></select> :
+              <select id="start-minute"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>結束時間</label>
+            <div class="datetime-combo-box">
+              <input type="date" id="end-date" required>
+              <select id="end-hour"></select> :
+              <select id="end-minute"></select>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">新增事項</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbzpWnVyGjaTtCAQvBwBJL9RyTewHEQfkbas0svWfU3JXcwOJWVgMZ-KDUCQ-QkwaSg/exec';
+    
+    let viewDate = new Date(); 
+    let selectedDateStr = formatYYYYMMDD(new Date()); 
+    let fetchedHolidays = []; 
+    let isHolidayVisible = true; 
+    let cachedYears = {}; 
+
+    function populateSelectOptions(elementId, max) {
+      const select = document.getElementById(elementId);
+      if (!select) return;
+      let html = '';
+      for (let i = 0; i < max; i++) {
+        html += `<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`;
+      }
+      select.innerHTML = html;
+    }
+
+    function initTimeSelects() {
+      populateSelectOptions('start-hour', 24);
+      populateSelectOptions('end-hour', 24);
+      populateSelectOptions('start-minute', 60);
+      populateSelectOptions('end-minute', 60);
+    }
+
+    function formatYYYYMMDD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getPassedLawHolidays(year) {
+      const fixedLaws = [
+        { title: "勞動節", month: 5, day: 1 },
+        { title: "教師節", month: 9, day: 28 },
+        { title: "臺灣光復節", month: 10, day: 25 },
+        { title: "行憲紀念日", month: 12, day: 25 }
+      ];
+      
+      const results = [];
+      fixedLaws.forEach(l => {
+        const d = new Date(year, l.month - 1, l.day);
+        const w = d.getDay();
+        
+        results.push({
+          title: l.title,
+          date: formatYYYYMMDD(d),
+          emoji: '🛏️',
+          isHoliday: true,
+          isWorkMakeup: false
+        });
+
+        if (w === 6) { 
+          const copy = new Date(year, l.month - 1, l.day - 1);
+          results.push({ title: `${l.title}補假`, date: formatYYYYMMDD(copy), emoji: '🛏️', isHoliday: true, isWorkMakeup: false });
+        } else if (w === 0) { 
+          const copy = new Date(year, l.month - 1, l.day + 1);
+          results.push({ title: `${l.title}補假`, date: formatYYYYMMDD(copy), emoji: '🛏️', isHoliday: true, isWorkMakeup: false });
+        }
+      });
+
+      let lunarEveStr = "";
+      if (year === 2025) lunarEveStr = "2025-01-28";
+      if (year === 2026) lunarEveStr = "2026-02-16";
+      if (year === 2027) lunarEveStr = "2027-02-05";
+      if (year === 2028) lunarEveStr = "2028-01-25";
+
+      if (lunarEveStr) {
+        const eveDate = new Date(lunarEveStr);
+        eveDate.setDate(eveDate.getDate() - 1);
+        results.push({
+          title: "小年夜",
+          date: formatYYYYMMDD(eveDate),
+          emoji: '🛏️',
+          isHoliday: true,
+          isWorkMakeup: false
+        });
+      }
+
+      return results;
+    }
+
+    async function fetchHolidayEvents() {
+      const targetYear = viewDate.getFullYear();
+      if (cachedYears[targetYear]) {
+        fetchedHolidays = cachedYears[targetYear];
+        renderEverything();
+        return;
+      }
+
+      let apiData = [];
+      try {
+        const response = await fetch(`${HOLIDAY_API_URL}?year=${targetYear}`, { method: 'GET', mode: 'cors' });
+        if (response.ok) {
+          const rawData = await response.json();
+          if (Array.isArray(rawData)) apiData = rawData;
+        }
+      } catch (err) {
+        const y = targetYear;
+        apiData = [
+          { title: "元旦", date: `${y}-01-01`, isHoliday: true },
+          { title: "補行上班日", date: `${y}-02-07`, isHoliday: false }, 
+          { title: "和平紀念日", date: `${y}-02-28`, isHoliday: true },
+          { title: "兒童節", date: `${y}-04-04`, isHoliday: true },
+          { title: "端午節", date: `${y}-06-19`, isHoliday: true },
+          { title: "國慶日", date: `${y}-10-10`, isHoliday: true }
+        ];
+        if (y === 2026) {
+          apiData.push({ title: "春節除夕", date: "2026-02-16", isHoliday: true });
+          apiData.push({ title: "春節", date: "2026-02-17", isHoliday: true });
+          apiData.push({ title: "清明節", date: "2026-04-05", isHoliday: true });
+        }
+      }
+
+      const processed = [];
+      apiData.forEach(h => {
+        const titleText = h.title || h.localName || '';
+        const isWorkWay = titleText.includes('補行上班') || titleText.includes('補班');
+        
+        if (titleText.includes('補假')) {
+          const chkDate = new Date(h.date);
+          if (chkDate.getDay() === 0 || chkDate.getDay() === 6) return; 
+        }
+
+        if (isWorkWay) {
+          processed.push({
+            title: titleText.includes('補班') ? titleText : titleText + ' (補班)',
+            date: h.date,
+            emoji: '🖕',
+            startTime: `${h.date}T00:00`,
+            endTime: `${h.date}T23:59`,
+            isHoliday: false,
+            isWorkMakeup: true
+          });
+        } else {
+          processed.push({
+            title: titleText,
+            date: h.date, 
+            emoji: '🛏️', 
+            startTime: `${h.date}T00:00`,
+            endTime: `${h.date}T23:59`,
+            isHoliday: true,
+            isWorkMakeup: false
+          });
+        }
+      });
+
+      const lawHolidays = getPassedLawHolidays(targetYear);
+      lawHolidays.forEach(lh => {
+        if (!processed.some(p => p.date === lh.date && p.title === lh.title)) {
+          processed.push({
+            ...lh,
+            startTime: `${lh.date}T00:00`,
+            endTime: `${lh.date}T23:59`
+          });
+        }
+      });
+
+      if (targetYear === 2027) {
+        if (!processed.some(p => p.date === "2027-10-11")) {
+          processed.push({ title: "國慶日補假", date: "2027-10-11", emoji: '🛏️', startTime: "2027-10-11T00:00", endTime: "2027-10-11T23:59", isHoliday: true, isWorkMakeup: false });
+        }
+      } else if (targetYear === 2026) {
+        if (!processed.some(p => p.date === "2026-04-03")) {
+          processed.push({ title: "兒童節補假", date: "2026-04-03", emoji: '🛏️', startTime: "2026-04-03T00:00", endTime: "2026-04-03T23:59", isHoliday: true, isWorkMakeup: false });
+        }
+        if (!processed.some(p => p.date === "2026-04-06")) {
+          processed.push({ title: "清明節補假", date: "2026-04-06", emoji: '🛏️', startTime: "2026-04-06T00:00", endTime: "2026-04-06T23:59", isHoliday: true, isWorkMakeup: false });
+        }
+      }
+      
+      cachedYears[targetYear] = processed;
+      fetchedHolidays = processed;
+      renderEverything();
+    }
+
+    function getCustomEvents() {
+      return JSON.parse(localStorage.getItem('app_calendar_tasks')) || [];
+    }
+
+    function saveCustomEvents(events) {
+      localStorage.setItem('app_calendar_tasks', JSON.stringify(events));
+    }
+
+    function getDayEvents(dateStr) {
+      const list = [];
+      // 這裡過濾國定假日的顯示，但不引導變更基礎日期屬性
+      if (isHolidayVisible) {
+        fetchedHolidays.forEach(h => { if (h.date === dateStr) list.push(h); });
+      }
+      const customList = getCustomEvents();
+      customList.forEach(e => {
+        const startDay = e.startTime.split('T')[0];
+        const endDay = e.endTime.split('T')[0];
+        if (dateStr >= startDay && dateStr <= endDay) list.push(e);
+      });
+      return list;
+    }
+
+    function renderEverything() {
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+
+      document.getElementById('year-month-label').textContent = `${year} 年 ${month + 1} 月`;
+      document.getElementById('label-selected-date').textContent = selectedDateStr;
+
+      const container = document.getElementById('days-container');
+      container.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'day-cell empty';
+        container.appendChild(emptyCell);
+      }
+
+      const todayStr = formatYYYYMMDD(new Date());
+      for (let d = 1; d <= totalDays; d++) {
+        const cellDate = new Date(year, month, d);
+        const dateStr = formatYYYYMMDD(cellDate);
+        const dayOfWeek = cellDate.getDay();
+
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+
+        // 注意：為了防止今日邏輯在隱藏國定假日後誤判，這裡特地獨立抓取全量假日來判定日期屬性
+        const allYearHolidays = cachedYears[year] || fetchedHolidays;
+        const hasHolidayRaw = allYearHolidays.some(e => e.date === dateStr && e.isHoliday);
+        const hasWorkMakeupRaw = allYearHolidays.some(e => e.date === dateStr && e.isWorkMakeup);
+
+        const dayEvents = getDayEvents(dateStr);
+        const isNationalHoliday = dayEvents.some(e => e.isHoliday);
+        const isWorkMakeup = dayEvents.some(e => e.isWorkMakeup);
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+        if (isWeekend) cell.classList.add('weekend'); 
+        if (isNationalHoliday && isHolidayVisible) cell.classList.add('national-holiday'); 
+        if (isWorkMakeup && isHolidayVisible) cell.classList.add('work-makeup'); 
+
+        // 核心解法：調整今日為假日的判定邏輯，移除 isHolidayVisible 的不對等綁定
+        if (dateStr === todayStr) {
+          cell.classList.add('today'); 
+          
+          // 只要今天是週末，或者當天原本就有國定假日（且絕對不能是排定好的補班日），一律強制永久上橘色
+          if ((isWeekend || hasHolidayRaw) && !hasWorkMakeupRaw) {
+            cell.classList.add('is-vaction'); 
+          }
+        }
+        
+        if (dateStr === selectedDateStr) cell.classList.add('selected');
+
+        const numLabel = document.createElement('div');
+        numLabel.className = 'day-num';
+        numLabel.textContent = d;
+        cell.appendChild(numLabel);
+
+        const emojiWrapper = document.createElement('div');
+        emojiWrapper.className = 'day-emoji-wrapper';
+        dayEvents.forEach(e => {
+          if (e.emoji) {
+            const emojiSpan = document.createElement('span');
+            emojiSpan.textContent = e.emoji;
+            emojiSpan.title = e.title;
+            emojiWrapper.appendChild(emojiSpan);
+          }
+        });
+        cell.appendChild(emojiWrapper);
+
+        cell.addEventListener('click', () => {
+          selectedDateStr = dateStr;
+          document.getElementById('start-date').value = dateStr;
+          document.getElementById('end-date').value = dateStr;
+          renderEverything();
+        });
+
+        container.appendChild(cell);
+      }
+      renderTodoList();
+    }
+
+    function renderTodoList() {
+      const targetList = document.getElementById('todo-list-target');
+      targetList.innerHTML = '';
+
+      const events = getDayEvents(selectedDateStr);
+      document.getElementById('todo-count-label').textContent = `當日代辦 (${events.length}筆)`;
+
+      if (events.length === 0) {
+        targetList.innerHTML = `<div style="text-align:center; color:#7f8c8d; padding-top:20px; font-size:13px;">本日尚無行程！</div>`;
+        return;
+      }
+
+      events.forEach(e => {
+        const item = document.createElement('div');
+        item.className = 'todo-item';
+        const tStart = e.startTime.replace('T', ' ');
+        const tEnd = e.endTime.replace('T', ' ');
+
+        item.innerHTML = `
+          <div class="todo-item-info">
+            <span class="todo-item-title">${e.emoji ? e.emoji + ' ' : ''}${e.title}</span>
+            <span class="todo-item-time">${tStart} → ${tEnd}</span>
+          </div>
+        `;
+
+        if (!e.isHoliday && !e.isWorkMakeup) {
+          const dBtn = document.createElement('button');
+          dBtn.className = 'del-btn'; dBtn.textContent = '✕';
+          dBtn.onclick = () => {
+            let customs = getCustomEvents().filter(item => item.id !== e.id);
+            saveCustomEvents(customs);
+            renderEverything();
+          };
+          item.appendChild(dBtn);
+        }
+        targetList.appendChild(item);
+      });
+    }
+
+    document.getElementById('main-todo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('input-title').value.trim();
+      const emoji = document.getElementById('select-emoji').value;
+      const sDate = document.getElementById('start-date').value;
+      const sH = document.getElementById('start-hour').value;
+      const sM = document.getElementById('start-minute').value;
+      const eDate = document.getElementById('end-date').value;
+      const eH = document.getElementById('end-hour').value;
+      const eM = document.getElementById('end-minute').value;
+
+      const startTime = `${sDate}T${sH}:${sM}`;
+      const endTime = `${eDate}T${eH}:${eM}`;
+
+      if (new Date(startTime) >= new Date(endTime)) {
+        alert('❌ 錯誤：結束時間必須晚於開始時間！');
+        return;
+      }
+
+      const customs = getCustomEvents();
+      customs.push({ id: 'task_' + Date.now(), title, emoji, startTime, endTime, isHoliday: false, isWorkMakeup: false });
+      saveCustomEvents(customs);
+      document.getElementById('input-title').value = '';
+      renderEverything();
+    });
+
+    document.getElementById('btn-toggle-holiday').addEventListener('click', function() {
+      isHolidayVisible = !isHolidayVisible;
+      if (isHolidayVisible) {
+        this.textContent = '🗓️ 顯示國定假日';
+      } else {
+        this.textContent = '🙈 隱藏國定假日';
+      }
+      renderEverything(); 
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => { 
+      viewDate.setMonth(viewDate.getMonth() - 1); 
+      fetchHolidayEvents(); 
+    });
+    
+    document.getElementById('btn-next').addEventListener('click', () => { 
+      viewDate.setMonth(viewDate.getMonth() + 1); 
+      fetchHolidayEvents(); 
+    });
+
+    window.onload = () => {
+      initTimeSelects();
+      document.getElementById('start-date').value = selectedDateStr;
+      document.getElementById('end-date').value = selectedDateStr;
+      document.getElementById('current-today-sub').textContent = `今日：${selectedDateStr}`;
+      fetchHolidayEvents();
+    };
+  </script>
+</body>
+</html>
