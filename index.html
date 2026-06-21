@@ -10,265 +10,54 @@
       --panel-bg: #e2e7ec;
       --card-bg: #f5f7f9;
       --text-color: #2c3e50;
-      
-      /* 飽和度與透明度統一的柔和色調 */
-      --weekend-bg-color: rgba(231, 76, 60, 0.2);     /* 假日紅 */
-      --today-color: rgba(241, 196, 15, 0.25);          /* 當日平時黃 */
-      --today-weekend-color: #e67e22;                  /* 當日逢假日：精準深橘色 */
+      --weekend-bg-color: rgba(231, 76, 60, 0.2);     
+      --today-color: rgba(241, 196, 15, 0.25);          
+      --today-weekend-color: #e67e22;                  
       --selected-color: #3498db;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 15px;
-      overflow: hidden;
-    }
-
-    .app-container {
-      display: flex;
-      gap: 20px;
-      width: 100%;
-      max-width: 1280px;
-      height: 92vh;
-      max-height: 800px;
-    }
-
-    /* 左側月曆面板 */
-    .calendar-panel {
-      flex: 1.4;
-      background: var(--panel-bg);
-      border-radius: 30px;
-      padding: 25px;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .calendar-title-group h1 {
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    .calendar-title-group p {
-      font-size: 13px;
-      color: #7f8c8d;
-      margin-top: 2px;
-    }
-
-    .header-right-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .toggle-holiday-btn {
-      background: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .nav-btn {
-      background: #fff;
-      border: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 14px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .weekdays-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #7f8c8d;
-      font-size: 14px;
-    }
-
-    .days-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: 1fr;
-      gap: 8px;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .day-cell {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .day-num {
-      font-weight: bold;
-      font-size: 14px;
-      color: #2c3e50;
-    }
-
-    /* 基礎背景色樣式 */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow: hidden; }
+    .app-container { display: flex; gap: 20px; width: 100%; max-width: 1280px; height: 92vh; max-height: 800px; }
+    .calendar-panel { flex: 1.4; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .calendar-title-group h1 { font-size: 26px; font-weight: bold; }
+    .calendar-title-group p { font-size: 13px; color: #7f8c8d; margin-top: 2px; }
+    .header-right-controls { display: flex; gap: 10px; align-items: center; }
+    .toggle-holiday-btn { background: #fff; border: none; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .nav-btn { background: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .weekdays-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; margin-bottom: 10px; color: #7f8c8d; font-size: 14px; }
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; gap: 8px; flex: 1; min-height: 0; }
+    .day-cell { background: var(--card-bg); border-radius: 16px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; position: relative; }
+    .day-num { font-weight: bold; font-size: 14px; color: #2c3e50; }
     .day-cell.weekend { background-color: var(--weekend-bg-color) !important; }
     .day-cell.national-holiday { background-color: var(--weekend-bg-color) !important; }
     .day-cell.work-makeup { background-color: var(--card-bg) !important; } 
-
-    /* 今日特殊顏色判定 */
     .day-cell.today { background-color: var(--today-color) !important; } 
     .day-cell.today.is-vaction { background-color: var(--today-weekend-color) !important; color: #fff !important; } 
     .day-cell.today.is-vaction .day-num { color: #fff !important; }
-
     .day-cell.selected { border: 2px solid var(--selected-color); background-color: #fff; }
     .day-cell.empty { opacity: 0.2; cursor: default; pointer-events: none; }
-
-    .day-emoji-wrapper {
-      display: flex;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-      gap: 2px;
-      font-size: 14px;
-    }
-
-    /* 右側待辦面板 */
-    .todo-panel {
-      flex: 1;
-      background: var(--panel-bg);
-      border-radius: 30px;
-      padding: 25px;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
+    .day-emoji-wrapper { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 2px; font-size: 14px; }
+    .todo-panel { flex: 1; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
     .todo-panel h2 { font-size: 20px; margin-bottom: 4px; }
     .selected-date-sub { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; }
-
-    .todo-main-list-area {
-      flex: 3;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .todo-list-container {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-
-    .todo-form-area {
-      flex: 7;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      min-height: 0;
-    }
-
-    .todo-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-bg);
-      padding: 10px 12px;
-      border-radius: 12px;
-      margin-bottom: 8px;
-    }
-
+    .todo-main-list-area { flex: 3; display: flex; flex-direction: column; min-height: 0; }
+    .todo-list-container { flex: 1; overflow-y: auto; margin-bottom: 10px; }
+    .todo-form-area { flex: 7; display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; }
+    .todo-item { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; }
     .todo-item-info { display: flex; flex-direction: column; gap: 2px; }
     .todo-item-title { font-weight: bold; font-size: 14px; }
     .todo-item-time { font-size: 11px; color: #95a5a6; }
-
-    .del-btn {
-      background: #fadbd8; color: #e74c3c; border: none;
-      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 12px;
-    }
-
-    .todo-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #fff;
-      padding: 15px;
-      border-radius: 20px;
-      overflow-y: auto;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .form-group label {
-      font-size: 12px;
-      font-weight: bold;
-      color: #7f8c8d;
-    }
-
-    .datetime-combo-box {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      width: 100%;
-    }
-
-    .datetime-combo-box input[type="date"] {
-      flex: 1.8;
-      min-width: 0;
-    }
-
-    .datetime-combo-box select {
-      flex: 1;
-      min-width: 0;
-      text-align: center;
-    }
-
-    input[type="text"], input[type="date"], select {
-      background: var(--bg-color);
-      border: none;
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .submit-btn {
-      background-color: #34495e;
-      color: white; border: none; padding: 10px;
-      border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px;
-      margin-top: 4px;
-    }
+    .del-btn { background: #fadbd8; color: #e74c3c; border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .todo-form { display: flex; flex-direction: column; gap: 8px; background: #fff; padding: 15px; border-radius: 20px; overflow-y: auto; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 12px; font-weight: bold; color: #7f8c8d; }
+    .datetime-combo-box { display: flex; gap: 4px; align-items: center; width: 100%; }
+    .datetime-combo-box input[type="date"] { flex: 1.8; min-width: 0; }
+    .datetime-combo-box select { flex: 1; min-width: 0; text-align: center; }
+    input[type="text"], input[type="date"], select { background: var(--bg-color); border: none; padding: 8px 10px; border-radius: 10px; font-size: 13px; outline: none; }
+    .submit-btn { background-color: #34495e; color: white; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -352,7 +141,7 @@
   </div>
 
   <script>
-    const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbzpWnVyGjaTtCAQvBwBJL9RyTewHEQfkbas0svWfU3JXcwOJWVgMZ-KDUCQ-QkwaSg/exec';
+    const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbzLehfxkm7VFNjMFCxzwBd4HPeInhm46QZcTqOg5HBL4uDoudqNJZBcNh0v7et8eMk/exec';
     
     let viewDate = new Date(); 
     let selectedDateStr = formatYYYYMMDD(new Date()); 
@@ -511,16 +300,20 @@
         }
       });
 
-      if (targetYear === 2027) {
-        if (!processed.some(p => p.date === "2027-10-11")) {
-          processed.push({ title: "國慶日補假", date: "2027-10-11", emoji: '🛏️', startTime: "2027-10-11T00:00", endTime: "2027-10-11T23:59", isHoliday: true, isWorkMakeup: false });
-        }
-      } else if (targetYear === 2026) {
+      // 🎯 修正重點：確保 2026 年的「端午節（2026-06-19）」一定會出現在陣列中不被濾掉
+      if (targetYear === 2026) {
         if (!processed.some(p => p.date === "2026-04-03")) {
           processed.push({ title: "兒童節補假", date: "2026-04-03", emoji: '🛏️', startTime: "2026-04-03T00:00", endTime: "2026-04-03T23:59", isHoliday: true, isWorkMakeup: false });
         }
         if (!processed.some(p => p.date === "2026-04-06")) {
           processed.push({ title: "清明節補假", date: "2026-04-06", emoji: '🛏️', startTime: "2026-04-06T00:00", endTime: "2026-04-06T23:59", isHoliday: true, isWorkMakeup: false });
+        }
+        if (!processed.some(p => p.date === "2026-06-19")) {
+          processed.push({ title: "端午節", date: "2026-06-19", emoji: '🛏️', startTime: "2026-06-19T00:00", endTime: "2026-06-19T23:59", isHoliday: true, isWorkMakeup: false });
+        }
+      } else if (targetYear === 2027) {
+        if (!processed.some(p => p.date === "2027-10-11")) {
+          processed.push({ title: "國慶日補假", date: "2027-10-11", emoji: '🛏️', startTime: "2027-10-11T00:00", endTime: "2027-10-11T23:59", isHoliday: true, isWorkMakeup: false });
         }
       }
       
@@ -539,7 +332,6 @@
 
     function getDayEvents(dateStr) {
       const list = [];
-      // 這裡過濾國定假日的顯示，但不引導變更基礎日期屬性
       if (isHolidayVisible) {
         fetchedHolidays.forEach(h => { if (h.date === dateStr) list.push(h); });
       }
@@ -580,7 +372,6 @@
         const cell = document.createElement('div');
         cell.className = 'day-cell';
 
-        // 注意：為了防止今日邏輯在隱藏國定假日後誤判，這裡特地獨立抓取全量假日來判定日期屬性
         const allYearHolidays = cachedYears[year] || fetchedHolidays;
         const hasHolidayRaw = allYearHolidays.some(e => e.date === dateStr && e.isHoliday);
         const hasWorkMakeupRaw = allYearHolidays.some(e => e.date === dateStr && e.isWorkMakeup);
@@ -594,11 +385,8 @@
         if (isNationalHoliday && isHolidayVisible) cell.classList.add('national-holiday'); 
         if (isWorkMakeup && isHolidayVisible) cell.classList.add('work-makeup'); 
 
-        // 核心解法：調整今日為假日的判定邏輯，移除 isHolidayVisible 的不對等綁定
         if (dateStr === todayStr) {
           cell.classList.add('today'); 
-          
-          // 只要今天是週末，或者當天原本就有國定假日（且絕對不能是排定好的補班日），一律強制永久上橘色
           if ((isWeekend || hasHolidayRaw) && !hasWorkMakeupRaw) {
             cell.classList.add('is-vaction'); 
           }
@@ -664,6 +452,15 @@
           const dBtn = document.createElement('button');
           dBtn.className = 'del-btn'; dBtn.textContent = '✕';
           dBtn.onclick = () => {
+            fetch(HOLIDAY_API_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: "delete", id: e.id })
+            })
+            .then(() => console.log('已向試算表發送刪除指令'))
+            .catch(err => console.error('試算表刪除連線異常:', err));
+
             let customs = getCustomEvents().filter(item => item.id !== e.id);
             saveCustomEvents(customs);
             renderEverything();
@@ -674,7 +471,7 @@
       });
     }
 
-    document.getElementById('main-todo-form').addEventListener('submit', (e) => {
+    document.getElementById('main-todo-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const title = document.getElementById('input-title').value.trim();
       const emoji = document.getElementById('select-emoji').value;
@@ -693,9 +490,31 @@
         return;
       }
 
+      const newTaskData = { 
+        id: 'task_' + Date.now(), 
+        title: title, 
+        emoji: emoji, 
+        startTime: startTime, 
+        endTime: endTime, 
+        isHoliday: false, 
+        isWorkMakeup: false 
+      };
+
       const customs = getCustomEvents();
-      customs.push({ id: 'task_' + Date.now(), title, emoji, startTime, endTime, isHoliday: false, isWorkMakeup: false });
+      customs.push(newTaskData);
       saveCustomEvents(customs);
+
+      fetch(HOLIDAY_API_URL, {
+        method: 'POST',
+        mode: 'no-cors', 
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newTaskData)
+      })
+      .then(() => console.log('試算表異步同步成功'))
+      .catch(err => console.error('試算表同步連線異常:', err));
+
       document.getElementById('input-title').value = '';
       renderEverything();
     });
