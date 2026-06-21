@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>好友共享共用行事曆</title>
   <style>
     :root {
@@ -18,10 +18,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
     
-    /* 預設隱藏主畫面，驗證成功後才顯示 */
-    body { background-color: var(--bg-color); color: var(--text-color); display: none; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-y: auto; }
+    body { background-color: var(--bg-color); color: var(--text-color); display: none; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
     
-    /* 核心外層容器 - 桌機預設版 */
     .app-container { display: flex; gap: 20px; width: 100%; max-width: 1280px; height: 92vh; max-height: 800px; }
     .calendar-panel { flex: 1.4; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -44,7 +42,6 @@
     .day-cell.empty { opacity: 0.2; cursor: default; pointer-events: none; }
     .day-emoji-wrapper { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 2px; font-size: 14px; }
     
-    /* 右側面板 */
     .todo-panel { flex: 1; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
     .todo-panel h2 { font-size: 20px; margin-bottom: 4px; }
     .selected-date-sub { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; }
@@ -65,40 +62,90 @@
     input[type="text"], input[type="date"], select { background: var(--bg-color); border: none; padding: 8px 10px; border-radius: 10px; font-size: 13px; outline: none; }
     .submit-btn { background-color: #34495e; color: white; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 4px; }
 
-    /* ==========================================================================
-       ✨ 新增的手機版獨佔響應式排版（直式堆疊，不影響平板/筆電/電腦版）
-       ========================================================================== */
-    @media screen and (max-width: 768px) {
+    /* 修正點：僅在手機「直式(portrait)」下進行垂直單欄排版 */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
       body {
+        display: block !important; 
+        height: auto !important;
+        overflow-y: auto !important;
         padding: 10px;
-        align-items: flex-start;
       }
       .app-container {
-        flex-direction: column; /* 讓原本左右並排在手機端變成上下直立堆疊 */
-        height: auto;
-        max-height: none;
+        flex-direction: column !important; 
+        height: auto !important;
+        max-height: none !important;
         gap: 15px;
       }
-      .calendar-panel {
-        flex: none;
-        height: auto;
-        min-height: 480px; /* 給予行事曆舒適的最小高度 */
-        padding: 20px 15px;
+      .calendar-panel, .todo-panel {
+        flex: none !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        padding: 20px 15px !important;
+        border-radius: 20px !important;
       }
       .days-grid {
-        grid-auto-rows: minmax(45px, 1fr); /* 防止格子被過度壓縮 */
-      }
-      .todo-panel {
-        flex: none;
-        height: auto;
-        padding: 20px 15px;
+        grid-auto-rows: minmax(45px, auto) !important; 
       }
       .todo-list-container {
-        max-height: 250px; /* 限制手機版待辦列表高度，避免無限延伸 */
+        max-height: 200px;
       }
       .todo-form {
-        max-height: none; /* 讓表單在手機上下滑動時能完整顯示 */
-        overflow-y: visible;
+        max-height: none !important;
+        overflow-y: visible !important;
+      }
+    }
+
+    /* 修正點：當手機處於「橫式(landscape)」時，確保參考電腦版左右並排，微調行高與間距以防元件溢出 */
+    @media screen and (max-width: 950px) and (orientation: landscape) {
+      body {
+        padding: 5px !important;
+      }
+      .app-container {
+        height: 95vh !important;
+        gap: 10px !important;
+      }
+      .calendar-panel, .todo-panel {
+        padding: 12px !important;
+        border-radius: 20px !important;
+      }
+      .calendar-header {
+        margin-bottom: 8px !important;
+      }
+      .calendar-title-group h1 {
+        font-size: 18px !important;
+      }
+      .days-grid {
+        gap: 4px !important;
+      }
+      .day-cell {
+        padding: 4px !important;
+        border-radius: 8px !important;
+      }
+      .day-num {
+        font-size: 11px !important;
+      }
+      .day-emoji-wrapper {
+        font-size: 11px !important;
+      }
+      .todo-panel h2 {
+        font-size: 16px !important;
+      }
+      .todo-form {
+        padding: 8px !important;
+        gap: 4px !important;
+        border-radius: 12px !important;
+      }
+      .form-group label {
+        font-size: 10px !important;
+      }
+      input[type="text"], input[type="date"], select {
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+      }
+      .submit-btn {
+        padding: 6px !important;
+        font-size: 12px !important;
       }
     }
   </style>
@@ -110,7 +157,7 @@
       <div class="calendar-header">
         <div class="calendar-title-group">
           <h1 id="year-month-label">2026 年 6 月</h1>
-          <p id="current-today-sub">今日：2026-06-20</p>
+          <p id="current-today-sub">今日：2026-06-21</p>
         </div>
         <div class="header-right-controls">
           <button class="toggle-holiday-btn" id="btn-toggle-holiday">🗓️ 顯示國定假日</button>
@@ -127,7 +174,7 @@
 
     <div class="todo-panel">
       <h2>目前選取日期</h2>
-      <p class="selected-date-sub" id="label-selected-date">2026-06-20</p>
+      <p class="selected-date-sub" id="label-selected-date">2026-06-21</p>
 
       <div class="todo-main-list-area">
         <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px;" id="todo-count-label">當日代辦 (0筆)</div>
@@ -184,13 +231,15 @@
   </div>
 
   <script>
-    const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbyygXuNw9b4mXiIUXsQxNYU1GXo3i5yqI9KRKMXqmnl2I5jf6SWXXO8tx0zOC5YcCw/exec';
+    // 已更新為您的新試算表連結
+    const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbwyGETFTV9ydqLf3P3dahobeXzBwlGG9CxYfJrw7H5m2O5Gol0goLlneSP9P_tePcs/exec';
     
     let viewDate = new Date(); 
     let selectedDateStr = formatYYYYMMDD(new Date()); 
     let fetchedHolidays = []; 
     let isHolidayVisible = true; 
     let cachedYears = {}; 
+    let currentUsername = ""; 
 
     async function verifyWithSpreadsheetOnLoad() {
       const user = prompt("【登入提示】請輸入管理員帳號：");
@@ -221,7 +270,8 @@
         if (response.ok) {
           const resData = await response.json();
           if (resData.status === "success") {
-            document.body.style.display = "flex";
+            currentUsername = user; 
+            document.body.style.display = "flex"; 
             return true;
           } else {
             alert("❌ 驗證失敗：" + (resData.message || "帳號或密碼錯誤！"));
@@ -238,6 +288,23 @@
         alert("❌ 驗證時發生連線錯誤，請確認 API 已發布為「所有人」存取。");
         window.location.reload();
         return false;
+      }
+    }
+
+    async function fetchServerEvents() {
+      try {
+        const response = await fetch(`${HOLIDAY_API_URL}?action=getEvents&_ts=${Date.now()}`, { 
+          method: 'GET', 
+          mode: 'cors' 
+        });
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData && resData.status === "success" && Array.isArray(resData.data)) {
+            saveCustomEvents(resData.data);
+          }
+        }
+      } catch (err) {
+        console.error("無法同步後端自訂行程:", err);
       }
     }
 
@@ -312,7 +379,6 @@
           isWorkMakeup: false
         });
       }
-
       return results;
     }
 
@@ -531,10 +597,11 @@
         item.className = 'todo-item';
         const tStart = e.startTime.replace('T', ' ');
         const tEnd = e.endTime.replace('T', ' ');
+        const userTag = e.user ? ` [${e.user}]` : '';
 
         item.innerHTML = `
           <div class="todo-item-info">
-            <span class="todo-item-title">${e.emoji ? e.emoji + ' ' : ''}${e.title}</span>
+            <span class="todo-item-title">${e.emoji ? e.emoji + ' ' : ''}${e.title}${userTag}</span>
             <span class="todo-item-time">${tStart} → ${tEnd}</span>
           </div>
         `;
@@ -543,19 +610,24 @@
           const dBtn = document.createElement('button');
           dBtn.className = 'del-btn'; dBtn.textContent = '✕';
           
-          dBtn.onclick = () => {
-            fetch(HOLIDAY_API_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: "delete", id: e.id })
-            })
-            .then(() => console.log('已向試算表發送刪除指令'))
-            .catch(err => console.error('試算表刪除連線異常:', err));
-
+          dBtn.onclick = async () => {
             let customs = getCustomEvents().filter(item => item.id !== e.id);
             saveCustomEvents(customs);
             renderEverything();
+
+            try {
+              await fetch(HOLIDAY_API_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "delete", id: e.id, title: e.title, startTime: e.startTime })
+              });
+              await new Promise(resolve => setTimeout(resolve, 600));
+              await fetchServerEvents();
+              renderEverything();
+            } catch (err) {
+              console.error('試算表刪除連線異常:', err);
+            }
           };
           item.appendChild(dBtn);
         }
@@ -563,7 +635,7 @@
       });
     }
 
-    document.getElementById('main-todo-form').addEventListener('submit', function(e) {
+    document.getElementById('main-todo-form').addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const title = document.getElementById('input-title').value.trim();
@@ -584,32 +656,37 @@
       }
 
       const newTaskData = { 
+        action: "add", 
         id: 'task_' + Date.now(), 
         title: title, 
         emoji: emoji, 
         startTime: startTime, 
         endTime: endTime, 
         isHoliday: false, 
-        isWorkMakeup: false 
+        isWorkMakeup: false,
+        username: currentUsername 
       };
 
       const customs = getCustomEvents();
       customs.push(newTaskData);
       saveCustomEvents(customs);
-
-      fetch(HOLIDAY_API_URL, {
-        method: 'POST',
-        mode: 'no-cors', 
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newTaskData)
-      })
-      .then(() => console.log('試算表異步同步成功'))
-      .catch(err => console.error('試算表同步連線異常:', err));
-
-      document.getElementById('input-title').value = '';
       renderEverything();
+      document.getElementById('input-title').value = '';
+
+      try {
+        await fetch(HOLIDAY_API_URL, {
+          method: 'POST',
+          mode: 'no-cors', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTaskData)
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        await fetchServerEvents();
+        renderEverything();
+      } catch (err) {
+        console.error('試算表同步連線異常:', err);
+      }
     });
 
     document.getElementById('btn-toggle-holiday').addEventListener('click', function() {
@@ -640,7 +717,14 @@
       document.getElementById('start-date').value = selectedDateStr;
       document.getElementById('end-date').value = selectedDateStr;
       document.getElementById('current-today-sub').textContent = `今日：${selectedDateStr}`;
+      
+      await fetchServerEvents();
       fetchHolidayEvents();
+
+      setInterval(async () => {
+        await fetchServerEvents();
+        renderEverything();
+      }, 15000);
     };
   </script>
 </body>
