@@ -19,8 +19,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
     
     /* 預設隱藏主畫面，驗證成功後才顯示 */
-    body { background-color: var(--bg-color); color: var(--text-color); display: none; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow: hidden; }
+    body { background-color: var(--bg-color); color: var(--text-color); display: none; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-y: auto; }
     
+    /* 核心外層容器 - 桌機預設版 */
     .app-container { display: flex; gap: 20px; width: 100%; max-width: 1280px; height: 92vh; max-height: 800px; }
     .calendar-panel { flex: 1.4; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -42,6 +43,8 @@
     .day-cell.selected { border: 2px solid var(--selected-color); background-color: #fff; }
     .day-cell.empty { opacity: 0.2; cursor: default; pointer-events: none; }
     .day-emoji-wrapper { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 2px; font-size: 14px; }
+    
+    /* 右側面板 */
     .todo-panel { flex: 1; background: var(--panel-bg); border-radius: 30px; padding: 25px; display: flex; flex-direction: column; min-width: 0; }
     .todo-panel h2 { font-size: 20px; margin-bottom: 4px; }
     .selected-date-sub { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; }
@@ -61,6 +64,43 @@
     .datetime-combo-box select { flex: 1; min-width: 0; text-align: center; }
     input[type="text"], input[type="date"], select { background: var(--bg-color); border: none; padding: 8px 10px; border-radius: 10px; font-size: 13px; outline: none; }
     .submit-btn { background-color: #34495e; color: white; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 4px; }
+
+    /* ==========================================================================
+       ✨ 新增的手機版獨佔響應式排版（直式堆疊，不影響平板/筆電/電腦版）
+       ========================================================================== */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+      .app-container {
+        flex-direction: column; /* 讓原本左右並排在手機端變成上下直立堆疊 */
+        height: auto;
+        max-height: none;
+        gap: 15px;
+      }
+      .calendar-panel {
+        flex: none;
+        height: auto;
+        min-height: 480px; /* 給予行事曆舒適的最小高度 */
+        padding: 20px 15px;
+      }
+      .days-grid {
+        grid-auto-rows: minmax(45px, 1fr); /* 防止格子被過度壓縮 */
+      }
+      .todo-panel {
+        flex: none;
+        height: auto;
+        padding: 20px 15px;
+      }
+      .todo-list-container {
+        max-height: 250px; /* 限制手機版待辦列表高度，避免無限延伸 */
+      }
+      .todo-form {
+        max-height: none; /* 讓表單在手機上下滑動時能完整顯示 */
+        overflow-y: visible;
+      }
+    }
   </style>
 </head>
 <body>
@@ -144,7 +184,6 @@
   </div>
 
   <script>
-    // 🔗 您的全新 Google Apps Script 部署 API 網址
     const HOLIDAY_API_URL = 'https://script.google.com/macros/s/AKfycbyygXuNw9b4mXiIUXsQxNYU1GXo3i5yqI9KRKMXqmnl2I5jf6SWXXO8tx0zOC5YcCw/exec';
     
     let viewDate = new Date(); 
@@ -153,7 +192,6 @@
     let isHolidayVisible = true; 
     let cachedYears = {}; 
 
-    // 🔒 串接試算表後端，進行即時動態密碼驗證
     async function verifyWithSpreadsheetOnLoad() {
       const user = prompt("【登入提示】請輸入管理員帳號：");
       if(!user) {
@@ -169,11 +207,10 @@
       }
 
       try {
-        // 發送登入驗證請求到後端 GAS
         const response = await fetch(HOLIDAY_API_URL, {
           method: 'POST',
           mode: 'cors',
-          headers: { 'Content-Type': 'text/plain' }, // 避免 CORS 預檢請求錯誤
+          headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: "login",
             username: user,
@@ -184,7 +221,6 @@
         if (response.ok) {
           const resData = await response.json();
           if (resData.status === "success") {
-            // 驗證成功，顯示主畫面並允許後續初始化
             document.body.style.display = "flex";
             return true;
           } else {
@@ -597,7 +633,6 @@
     });
 
     window.onload = async () => {
-      // 網頁載入時，優先進行後端試算表身分驗證
       const isAuthorized = await verifyWithSpreadsheetOnLoad();
       if (!isAuthorized) return; 
 
